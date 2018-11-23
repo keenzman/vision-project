@@ -1,4 +1,4 @@
-from keras.layers import Dense, Flatten
+from keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
 from keras.models import Sequential
 from keras.callbacks import Callback
 import pandas as pd
@@ -15,7 +15,7 @@ from wandb.keras import WandbCallback
 run = wandb.init()
 config = run.config
 
-config.batch_size = 32
+config.batch_size = 64
 config.num_epochs = 20
 
 input_shape = (48, 48, 1)
@@ -53,7 +53,21 @@ train_faces /= 255.
 val_faces /= 255.
 
 model = Sequential()
-model.add(Flatten(input_shape=input_shape))
+model.add(Conv2D(32, (3,3), activation = "relu", padding = "same", input_shape = input_shape))
+model.add(MaxPooling2D()) # increase to 64 possible due to sizing
+model.add(Conv2D(64, (3,3), activation = "relu", padding = "same"))
+model.add(MaxPooling2D())
+model.add(Conv2D(128, (3,3), activation = "relu", padding = "same"))
+model.add(MaxPooling2D())
+model.add(Conv2D(256, (3,3), activation = "relu", padding = "same"))
+model.add(MaxPooling2D())
+model.add(Conv2D(512, (3,3), activation = "relu", padding = "same"))
+model.add(MaxPooling2D())
+model.add(Flatten())
+model.add(Dropout(0.4))
+model.add(Dense(64, activation = "relu"))
+model.add(Dense(64, activation = "relu"))
+model.add(Dense(num_classes, activation="relu"))
 model.add(Dense(num_classes, activation="softmax"))
 
 model.compile(optimizer='adam', loss='categorical_crossentropy',
